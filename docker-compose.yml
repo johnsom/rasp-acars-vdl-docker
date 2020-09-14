@@ -1,0 +1,20 @@
+version: '3.5'
+
+services:
+  acarsdec:
+    build:
+      context: ./acarsdec
+    image: johnsom/acarsdec-docker:0.01
+    devices:
+      - /dev/bus/usb
+    command: ["-o", "4", "-i", "<your ID here>", "-j", "feed.acars.io:5550", "-r", "<ACARS SDR ID/serial>", "130.025", "130.425", "130.450", "131.125", "131.550"]
+    restart: unless-stopped
+  vdlm2dec:
+    build:
+      context: ./vdlm2dec
+    image: johnsom/vdlm2dec-docker:0.01
+    devices:
+      - /dev/bus/usb
+    command: ["-J", "-G", "-E", "-U", "-i", "<your ID here>", "-j", "feed.acars.io:5555", "-r", "<VDL SDR ID/serial>", "136.600", "136.650", "136.700", "136.800", "136.925", "136.975"]
+    restart: unless-stopped
+
