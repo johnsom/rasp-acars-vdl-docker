@@ -74,6 +74,21 @@ option.
 
   docker build --build-arg CFLAGS="-mcpu=cortex-a53+crypto -mtune=cortex-a53" -t johnsom/acarsdec-docker:0.01 .
 
+Rebuilding the Container Images
+*******************************
+
+You may want to rebuild the container images from scratch to pull in new
+versions of the software used in the containers. You can do this by adding the
+"--no-cache" argument to the "docker build" command:
+
+.. code-block:: bash
+
+  docker build --no-cache -t johnsom/acarsdec-docker:0.01 .
+
+Optionally, if you know it is just a specific package that needs to update,
+you can trigger a rebuild from that point in the Dockerfile by adding an
+'ARG BUILD="here"' line temporarily above it and running the build command
+again.
 
 Running the Containers
 **********************
@@ -138,6 +153,17 @@ From the directory that contains the docker-compose.yml file:
   docker-compose up -d
 
 This will also setup the containers to restart on a host reboot.
+
+While the containers are running in detached (background) mode, you can see
+the console output by running the docker-compose logs command:
+
+.. code-block:: bash
+
+  docker-compose logs -f
+
+The "-f" option tells the command to follow the updates and output new lines.
+
+Control-C can be used to exit follow mode.
 
 Stopping the Containers
 -----------------------
