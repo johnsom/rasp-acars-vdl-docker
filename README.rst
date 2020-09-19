@@ -25,6 +25,10 @@ The ACARS messages are captured and decoded using the `acarsdec
 
 VDL message capture and decoding is using the `vdlm2dec <https://github.com/TLeconte/vdlm2dec>`_ project.
 
+Both processes use `libacars <https://github.com/szpajder/libacars>`_ for
+message decoding and `librtlsdr <http://git.osmocom.org/rtl-sdr>`_ for
+connecting to the SDR.
+
 Each process will be compiled and a container will be created for each.
 
 Hardware
@@ -52,12 +56,6 @@ Radios should work fine as long as they are rtl-SDR style.
 Building the Containers
 ***********************
 
-.. note::
-
-  The included Dockerfiles are configured to build code optimized for the
-  Raspberry Pi 4 board. If you are using a different version of the Raspbeery
-  Pi, you may need to adjust or override the CFLAG settings being used.
-
 Both the acarsdec and vdlm2dec directories contain a "build-me.sh" script and
 the required Dockerfile. All of the images and code required will be downloaded
 during the build process. Some components, such as the base image, will be
@@ -66,8 +64,26 @@ shared between the two containers.
 You will need to edit the Dockerfile for each, replacing the "<VDL SDR ID/serial>" and "<ACARS SDR ID/serial>" with the radio ID or serial number of each
 radio.
 
+Note: The included Dockerfiles are configured to build code optimized for the
+Raspberry Pi 4 board. If you are using a different version of the Raspberry
+Pi, you may need to adjust or override the CFLAG settings being used.
+For example, to build for a Raspberry Pi 3, you would add the --build-arg
+option.
+
+.. code-block:: bash
+
+  docker build --build-arg CFLAGS="-mcpu=cortex-a53+crypto -mtune=cortex-a53" -t johnsom/acarsdec-docker:0.01 .
+
+
 Running the Containers
 **********************
+
+The containers are setup to simply output received messages to the console.
+They are also configured for frequencies in the USA. You may need to change
+the frequencies the SDRs are listening on for your region. See the
+`AIRFRAMES website <https://app.airframes.io/about>`_ for information on
+the appropriate frequencies for your area. Each can handle up to eight
+frequencies as long as they are within the same 2Mhz range.
 
 To run the acarsdec container to test it out, you can run:
 
@@ -83,6 +99,84 @@ To run the vdlm2dec container to test it out, you can run:
 
 Running with Docker Compose and Feeding AIRFRAMES
 *************************************************
+
+When you are ready to start feeding `AIRFRAMES <https://app.airframes.io/>`_
+you can use the included docker-compose.yml file to have Docker Compose manage
+running both containers.
+
+Edit the docker-compose.yml file to configure your station identifier by
+replacing the "<your ACARS ID here>" and "<your VDL ID here>" fields. Each
+process should have a unique name, preferably by using the
+`AIRFRAMES guidance <https://app.airframes.io/about>`_. Next, configure each
+container to point to the appropriate SDR by replacing the
+"<VDL SDR ID/serial>" and "<ACARS SDR ID/serial>" with the radio ID or serial
+number of each radio.
+You may need to adjust the frequencies here as you did above for the individual
+containers.
+
+The docker-compose file is already configured to start feeding
+`AIRFRAMES <https://app.airframes.io/>`_.
+
+Starting the Containers with the Console Attached
+-------------------------------------------------
+
+From the directory that contains the docker-compose.yml file:
+
+.. code-block:: bash
+
+  docker-compose up
+
+Control-C can be used to exit the console.
+
+Starting the Containers with the Console Detached
+-------------------------------------------------
+
+From the directory that contains the docker-compose.yml file:
+
+.. code-block:: bash
+
+  docker-compose up -d
+
+This will also setup the containers to restart on a host reboot.
+
+Stopping the Containers
+-----------------------
+
+From the directory that contains the docker-compose.yml file:
+
+.. code-block:: bash
+
+  docker-compose down
+
+Validating Your Feeder
+**********************
+
+Once your feeder is up and running, you can visit the `AIRFRAMES stations <https://app.airframes.io/stations>`_ page to see how many messages have been
+received from each of your processes.
+Note: You might not receive any messages right away.
+
+Troubleshooting
+***************
+
+If you need to get inside one of the containers, you can run the following
+commands:
+
+.. code-block:: bash
+
+  docker ps
+  docker exec -it <container_id_or_name> bash
+
+The "docker ps" command will list the containers running on your host.
+The "docker exec" command will launch a bash shell inside the container.
+
+References
+**********
+
+* `acarsdec <https://github.com/TLeconte/acarsdec>`_
+* `AIRFRAMES <https://app.airframes.io/about>`_
+* `libacars <https://github.com/szpajder/libacars>`_
+* `librtlsdr <http://git.osmocom.org/rtl-sdr>`_
+* `vdlm2dec <https://github.com/TLeconte/vdlm2dec>`_
 
 Disclaimers
 ***********
