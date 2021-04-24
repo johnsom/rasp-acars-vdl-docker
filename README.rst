@@ -77,18 +77,22 @@ option.
 Rebuilding the Container Images
 *******************************
 
-You may want to rebuild the container images from scratch to pull in new
-versions of the software used in the containers. You can do this by adding the
-"--no-cache" argument to the "docker build" command:
+From time to time you may want to update the containers with new versions
+of the software used in them. You can do this by running the build with
+--build-arg BUILD_DATE=<current_datetime_string> or by editing the Dockerfile
+and setting the BUILD_DATE value. Editing the Dockerfile will give you a
+record of the last time you updated the container.
+
+.. code-block:: bash
+
+  docker build --build-arg BUILD_DATE=0424211030 -t johnsom/acarsdec-docker:0.01 .
+
+If you want to rebuild the container images from scratch. You can do this
+by adding the "--no-cache" argument to the "docker build" command:
 
 .. code-block:: bash
 
   docker build --no-cache -t johnsom/acarsdec-docker:0.01 .
-
-Optionally, if you know it is just a specific package that needs to update,
-you can trigger a rebuild from that point in the Dockerfile by adding an
-'ARG BUILD="here"' line temporarily above it and running the build command
-again.
 
 Setup Logging
 *************

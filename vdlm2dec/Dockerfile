@@ -2,6 +2,7 @@ FROM ubuntu:20.04 as scratch
 
 ARG TZ=America/Los_Angeles
 RUN apt update && \
+    apt upgrade -y && \
     DEBIAN_FRONTEND="noninteractive" TZ=$TZ apt install -y \
       gcc \
       git \
@@ -13,6 +14,10 @@ RUN apt update && \
       zlib1g-dev \
       libxml2-dev \
       pkg-config && \
+    rm -rf /var/lib/apt/lists/*
+
+ARG BUILD_DATE=0424211021
+RUN apt upgrade -y && \
     rm -rf /var/lib/apt/lists/*
 
 RUN git clone git://git.osmocom.org/rtl-sdr.git /rtl-sdr
@@ -38,6 +43,7 @@ RUN CFLAGS=$CFLAGS make
 FROM ubuntu:20.04
 
 RUN apt update && \
+    apt upgrade -y && \
     DEBIAN_FRONTEND="noninteractive" TZ=$TZ apt install -y \
       zlib1g \
       libxml2 \
