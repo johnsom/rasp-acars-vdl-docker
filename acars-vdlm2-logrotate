@@ -1,0 +1,12 @@
+/var/log/containers/acars.log
+/var/log/containers/vdlm2.log
+{
+        rotate 7
+        daily
+        missingok
+        delaycompress
+        compress
+        postrotate
+                /usr/lib/rsyslog/rsyslog-rotate
+        endscript
+}

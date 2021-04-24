@@ -9,6 +9,12 @@ services:
       - /dev/bus/usb
     command: ["-o", "4", "-i", "<your ACARS ID here>", "-j", "feed.acars.io:5550", "-r", "<ACARS SDR ID/serial>", "130.025", "130.425", "130.450", "131.125", "131.550"]
     restart: unless-stopped
+    logging:
+      driver: syslog
+      options:
+        syslog-address: "unixgram:///run/rsyslog/acars-vdl/log.sock"
+        tag: ACARS
+        mode: non-blocking
   vdlm2dec:
     build:
       context: ./vdlm2dec
@@ -17,4 +23,9 @@ services:
       - /dev/bus/usb
     command: ["-J", "-G", "-E", "-U", "-i", "<your VDL ID here>", "-j", "feed.acars.io:5555", "-r", "<VDL SDR ID/serial>", "136.600", "136.650", "136.700", "136.800", "136.925", "136.975"]
     restart: unless-stopped
-
+    logging:
+      driver: syslog
+      options:
+        syslog-address: "unixgram:///run/rsyslog/acars-vdl/log.sock"
+        tag: VDLM2
+        mode: non-blocking

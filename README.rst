@@ -90,6 +90,28 @@ you can trigger a rebuild from that point in the Dockerfile by adding an
 'ARG BUILD="here"' line temporarily above it and running the build command
 again.
 
+Setup Logging
+*************
+
+The containers will log startup information and the acarsdec container will
+log messages received. These messages are useful for monitoring your receiver.
+To limit the write wear on your microSD card, we will setup a 1GB tmpfs volume
+that will store the logs. This volume is stored in RAM which means it will
+be erased should the Raspberry Pi lose power or be rebooted. The provided
+install.sh script will configure the operating system to create the tmpfs
+volume, mount it at /var/log/containers, configure rsyslog to store the log
+messages in files in /var/log/containers, and enable daily log file rotation.
+To setup logging, run the following command:
+
+.. code-block:: bash
+
+  sudo ./install.sh
+
+Once the containers are running, the following log files will be created:
+
+* ACARS - /var/log/containers/acars.log
+* VLDM2 - /var/log/containers/vdlm2.log
+
 Running the Containers
 **********************
 
@@ -153,17 +175,6 @@ From the directory that contains the docker-compose.yml file:
   docker-compose up -d
 
 This will also setup the containers to restart on a host reboot.
-
-While the containers are running in detached (background) mode, you can see
-the console output by running the docker-compose logs command:
-
-.. code-block:: bash
-
-  docker-compose logs -f
-
-The "-f" option tells the command to follow the updates and output new lines.
-
-Control-C can be used to exit follow mode.
 
 Stopping the Containers
 -----------------------
