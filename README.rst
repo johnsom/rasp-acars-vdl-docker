@@ -196,7 +196,7 @@ Once your feeder is up and running, you can visit the `AIRFRAMES stations <https
 received from each of your processes.
 Note: You might not receive any messages right away.
 
-Setting up a watchdog timer (Optional)
+Setting Up a Watchdog Timer (Optional)
 **************************************
 
 The Raspberry Pi includes a hardware watchdog device that can be used to
@@ -204,7 +204,7 @@ reset the Raspberry Pi should the software freeze (such as a kernel panic).
 
 1. Enable the watchdog hardware device:
 
-   * Edit the /boot/firmware/syscfg.txt
+   * Edit the /boot/firmware/usercfg.txt
 
      * Add "dtparam=watchdog=on". On reboot, this will enable the watchdog
        device.
@@ -230,19 +230,29 @@ reset the Raspberry Pi should the software freeze (such as a kernel panic).
        load average is the first "load average" number when you run the
        "uptime" command. Twenty-four is a large number, approximately six times
        the load a four core Raspberry Pi can normally process.
-     * Add "interface = eth0". This will cause the watchdog process to watch
-       the "eth0" network interface to make sure it is receiving traffic.
+     * Add "ping = 192.0.2.1". This will cause the watchdog process to ping
+       ip address 192.0.2.1 to make sure the networking is working correctly.
+       I recommend using the subnget gateway address.
      * Add "temperature-sensor = /sys/class/thermal/thermal_zone0/temp". This
        is the file where the Raspberry Pi core temperature is reported. Note,
        it is reported in thousandths of a degree Celsius.
      * Add "max-temperature = 82". This sets the watchdog service temperature
        threshold to eighty-two degrees Celsius. This is the temperature the
        Raspberry Pi will start throttling the CPU.
-     * Add "min-memory = 25000". This sets a minimum available memory threshold
-       for the watchdog process. This value is in memory pages, which is 4096
-       on the Raspberry Pi (getconf PAGESIZE). A value of twenty-five thousand
-       will set a low memory threshold of one hundred megabytes of available
+     * Add "min-memory = 3815". This sets a minimum available memory threshold
+       for the watchdog process. A value of thirty-eight hundred fifteen will
+       set a low memory threshold of two hundred fifty megabytes of available
        memory.
+
+.. code-block:: ini
+
+   watchdog-device = /dev/watchdog
+   watchdog-timeout = 15
+   max-load-1 = 24
+   ping = 192.0.2.1
+   temperature-sensor = /sys/class/thermal/thermal_zone0/temp
+   max-temperature = 82
+   min-memory = 3815
 
 4. Enable the watchdog service:
 
@@ -263,6 +273,45 @@ reset the Raspberry Pi should the software freeze (such as a kernel panic).
       sudo systemctl status watchdog | less
 
    The output should show that the service is active (running).
+
+Setting up SNTP Time Synchronization (Optional)
+***********************************************
+
+It is nice to have accurate timestamps for the messages received. Since the
+Raspberry Pi does not include a Real Time Clock (RTC), we would like to
+have a bootstrap timestamp to get the clock set early. To accomplish this
+you can use the systemd-timesyncd service. This will sync the clock using
+Simple Network Time Protocol (SNTP) and write out a time file that will be
+used on boot. As the clock stabilizes, it will increase the interval of the
+time synchronization and file update. The default maximum poll interval is
+thirty-four minutes, so the write wear from this bootstrap time file is low.
+
+To configure systemd-timesyncd follow these steps:
+
+1. Edit /etc/systemd/timesyncd.conf if you have preferred NTP server:
+
+   .. code-block:: ini
+
+      [Time]
+      NTP=192.0.2.1
+
+2. Make sure the service is enabled:
+
+   .. code-block:: bash
+
+      sudo systemctl enable systemd-timesyncd
+
+3. Restart the servie:
+
+   .. code-block:: bash
+
+      sudo systemctl restart systemd-timesyncd
+
+The systemd-timesyncd service can be monitored with the "timedatectl" command.
+
+.. code-block:: bash
+
+   timedatectl timesync-status
 
 Troubleshooting
 ***************
